@@ -97,12 +97,12 @@ public class ParsingStoreBuilder<Raw, Parsed> {
         if (parser == null) {
             throw new IllegalArgumentException("Parser cannot be null");
         }
-        RealInternalStore<Raw, Parsed> realInternalStore;
+        RealStore<Raw, Parsed> realStore;
         if (memCache == null) {
-            realInternalStore = new RealInternalStore<>(fetcher, persister, parser);
+            realStore = new RealStore<>(fetcher, persister, parser);
         } else {
-            realInternalStore = new RealInternalStore<>(fetcher, persister, parser, memCache);
+            realStore = new RealStore<>(fetcher, persister, parser, memCache);
         }
-        return new RealStore<>(realInternalStore);
+        return realStore;
     }
 }

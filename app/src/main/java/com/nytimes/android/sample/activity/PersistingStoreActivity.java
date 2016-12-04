@@ -22,6 +22,7 @@ import com.nytimes.android.sample.data.remote.Api;
 import java.io.IOException;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import okio.BufferedSource;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Retrofit;
@@ -82,7 +83,7 @@ public class PersistingStoreActivity extends Activity {
 
     private Observable<BufferedSource> fetcher(BarCode barCode) {
         return provideRetrofit().fetchSubredditForPersister(barCode.getKey(), "10")
-                .map(response -> response.raw().body().source());
+               .map(ResponseBody::source);
     }
 
     private Api provideRetrofit() {

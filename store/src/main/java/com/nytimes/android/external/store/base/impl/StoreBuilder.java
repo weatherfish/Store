@@ -84,11 +84,11 @@ public class StoreBuilder<T> {
         InternalStore<T> internalStore;
 
         if (memCache == null) {
-            internalStore = new RealInternalStore<>(fetcher, persister, new NoopParserFunc<T, T>());
+            internalStore = new RealStore<>(fetcher, persister, new NoopParserFunc<T, T>());
         } else {
-            internalStore = new RealInternalStore<>(fetcher, persister, new NoopParserFunc<T, T>(), memCache);
+            internalStore = new RealStore<>(fetcher, persister, new NoopParserFunc<T, T>(), memCache);
         }
-        return new RealStore<>(internalStore);
+        return internalStore;
 
     }
 }
