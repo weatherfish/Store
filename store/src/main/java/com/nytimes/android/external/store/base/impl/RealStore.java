@@ -5,6 +5,8 @@ import com.nytimes.android.external.store.base.Fetcher;
 import com.nytimes.android.external.store.base.InternalStore;
 import com.nytimes.android.external.store.base.Parser;
 import com.nytimes.android.external.store.base.Persister;
+import com.nytimes.android.external.store.util.KeyParser;
+import com.nytimes.android.external.store.util.NoKeyParser;
 import com.nytimes.android.external.store.util.NoopParserFunc;
 import com.nytimes.android.external.store.util.NoopPersister;
 
@@ -18,39 +20,51 @@ public class RealStore<Parsed, Key> implements Store<Parsed, Key> {
 
     private final InternalStore<Parsed, Key> internalStore;
 
-    RealStore(InternalStore<Parsed, Key> internalStore) {
+    public RealStore(InternalStore<Parsed, Key> internalStore) {
         this.internalStore = internalStore;
     }
 
     public RealStore(Fetcher<Parsed, Key> fetcher) {
+        final Parser<Parsed, Parsed> noOpFunc = new NoopParserFunc<>();
         internalStore = new RealInternalStore<>(fetcher, new NoopPersister<Parsed, Key>(),
-                new NoopParserFunc<Parsed, Parsed>(), UNSPECIFIED);
+                new NoKeyParser<Key, Parsed, Parsed>(noOpFunc), UNSPECIFIED);
     }
 
-    public RealStore(Fetcher<Parsed, Key> fetcher, Persister<Parsed, Key> persister) {
+    public RealStore(Fetcher<Parsed, Key> fetcher,
+                     Persister<Parsed, Key> persister) {
+        final Parser<Parsed, Parsed> noOpFunc = new NoopParserFunc<>();
+        internalStore = new RealInternalStore<>(fetcher,
+                persister,
+                new NoKeyParser<Key, Parsed, Parsed>(noOpFunc),
+                UNSPECIFIED);
+    }
+
+    public <Raw> RealStore(Fetcher<Raw, Key> fetcher,
+                           Persister<Raw, Key> persister,
+                           final Parser<Raw, Parsed> parser) {
+        internalStore = new RealInternalStore<>(fetcher,
+                persister,
+                new NoKeyParser<Key, Raw, Parsed>(parser),
+                UNSPECIFIED);
+    }
+
+
+    public <Raw> RealStore(Fetcher<Raw, Key> fetcher,
+                           Persister<Raw, Key> persister,
+                           Parser<Raw, Parsed> parser,
+                           Cache<Key, Observable<Parsed>> memCache,
+                           StalePolicy policy) {
         internalStore = new RealInternalStore<>(fetcher, persister,
-                new NoopParserFunc<Parsed, Parsed>(), UNSPECIFIED);
+                new NoKeyParser<Key, Raw, Parsed>(parser), memCache, policy);
     }
 
     public <Raw> RealStore(Fetcher<Raw, Key> fetcher,
                            Persister<Raw, Key> persister,
-                           Parser<Raw, Parsed> parser) {
-        internalStore = new RealInternalStore<>(fetcher, persister, parser, UNSPECIFIED);
-    }
-
-
-    public <Raw> RealStore(Fetcher<Raw, Key> fetcher,
-                           Persister<Raw, Key> persister,
-                           Parser<Raw, Parsed> parser, Cache<Key, Observable<Parsed>> memCache) {
-        internalStore = new RealInternalStore<>(fetcher, persister, parser, memCache, UNSPECIFIED);
-    }
-
-
-    public <Raw> RealStore(Fetcher<Raw, Key> fetcher,
-                           Persister<Raw, Key> persister,
-                           Cache<Key, Observable<Parsed>> memCache) {
+                           KeyParser<Key, Raw, Parsed> parser,
+                           Cache<Key, Observable<Parsed>> memCache,
+                           StalePolicy policy) {
         internalStore = new RealInternalStore<>(fetcher, persister,
-                new NoopParserFunc<Raw, Parsed>(), memCache, UNSPECIFIED);
+                parser, memCache, policy);
     }
 
 
@@ -112,7 +126,7 @@ public class RealStore<Parsed, Key> implements Store<Parsed, Key> {
 
     @Override
     public void clear(@Nonnull Key key) {
-        internalStore.clear();
+        internalStore.clear(key);
     }
 
     protected Observable<Parsed> memory(@Nonnull Key key) {

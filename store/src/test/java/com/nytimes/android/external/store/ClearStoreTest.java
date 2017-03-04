@@ -1,8 +1,8 @@
 package com.nytimes.android.external.store;
 
 import com.nytimes.android.external.store.base.Fetcher;
-import com.nytimes.android.external.store.base.impl.Store;
 import com.nytimes.android.external.store.base.impl.BarCode;
+import com.nytimes.android.external.store.base.impl.Store;
 import com.nytimes.android.external.store.base.impl.StoreBuilder;
 
 import org.junit.Before;
@@ -20,6 +20,7 @@ import rx.Observable;
 
 import static com.nytimes.android.external.store.GetRefreshingTest.ClearingPersister;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -69,6 +70,7 @@ public class ClearStoreTest {
         // after clearing the memory another call should be made
         store.clear(barcode);
         store.get(barcode).test().awaitTerminalEvent();
+        verify(persister).clear(barcode);
         assertThat(networkCalls.intValue()).isEqualTo(2);
     }
 
